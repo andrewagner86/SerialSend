@@ -31,6 +31,7 @@ int main(int argc, char *argv[])
     unsigned char digits[MAX_PATH];
     int baudrate = 9600;
     int dev_num = 50;
+	int dtr = 1;
     int parse_hex_bytes = 0;
     int close_delay = 0;
     char dev_name[MAX_PATH];
@@ -122,6 +123,19 @@ int main(int argc, char *argv[])
             // Set the odd_parity flag.
             odd_parity = 1;
             if (!quiet) fprintf(stderr, "Odd parity selected\n");
+        }
+		else if (strcmp(argv[argn], "/dtr") == 0)
+        {
+            if (++argn < argc)
+            {
+                dtr = atoi(argv[argn]);
+                if (!quiet) fprintf(stderr, "DTR %d specified\n", dtr);
+            }
+            else
+            {
+                if (!quiet) fprintf(stderr, "DTR error\n");
+                return 1;
+            }
         }
         else if (strcmp(argv[argn], "/hex") == 0)
         {
@@ -220,6 +234,7 @@ int main(int argc, char *argv[])
     dcbSerialParams.ByteSize = 8;
     dcbSerialParams.StopBits = ONESTOPBIT;
     dcbSerialParams.Parity = even_parity ? EVENPARITY : odd_parity ? ODDPARITY : NOPARITY;
+	dcbSerialParams.fDtrControl = dtr ? DTR_CONTROL_ENABLE : DTR_CONTROL_DISABLE;
     if(SetCommState(hSerial, &dcbSerialParams) == 0)
     {
         if (!quiet) fprintf(stderr, "Error setting device parameters\n");
