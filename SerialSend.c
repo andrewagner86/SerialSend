@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     unsigned char buffer[MAX_PATH];
     unsigned char text_to_send[MAX_PATH];
     unsigned char digits[MAX_PATH];
-    int baudrate = 38400;
+    int baudrate = 9600;
     int dev_num = 50;
     int parse_hex_bytes = 0;
     int close_delay = 0;
