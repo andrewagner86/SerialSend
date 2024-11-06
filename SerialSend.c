@@ -1,10 +1,10 @@
 //
 // SerialSend.c - This program sends text via serial port
-// Written by Ted Burke - last updated 10-Jan-2022
+// Written by Ted Burke (http://batchloaf.com) - extedend by André Wagner
 //
 // The text to send is specified as command line arguments.
 // By default, the highest available serial port is used.
-// The default baud rate is 38400 baud.
+// The default baud rate is 9600 baud.
 //
 // To compile with MinGW:
 //
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     unsigned char digits[MAX_PATH];
     int baudrate = 9600;
     int dev_num = 50;
-	int dtr = 1;
+    int dtr = 1;
     int parse_hex_bytes = 0;
     int close_delay = 0;
     char dev_name[MAX_PATH];
@@ -50,8 +50,8 @@ int main(int argc, char *argv[])
     }
        
     // Print welcome message
-    if (!quiet) fprintf(stderr, "SerialSend (last updated 10-Jan-2022)\n");
-    if (!quiet) fprintf(stderr, "See http://batchloaf.com for more information\n");
+    if (!quiet) fprintf(stderr, "SerialSend 0.2.0\n");
+    if (!quiet) fprintf(stderr, "See https://github.com/andrewagner86/SerialSend for more information\n");
     
     // Parse the rest of the command line arguments
     strcpy(buffer, "");
@@ -124,8 +124,9 @@ int main(int argc, char *argv[])
             odd_parity = 1;
             if (!quiet) fprintf(stderr, "Odd parity selected\n");
         }
-		else if (strcmp(argv[argn], "/dtr") == 0)
+        else if (strcmp(argv[argn], "/dtr") == 0)
         {
+			// Set DTR
             if (++argn < argc)
             {
                 dtr = atoi(argv[argn]);
@@ -161,7 +162,7 @@ int main(int argc, char *argv[])
     if (strlen(buffer) == 0)
     {
         if (!quiet) fprintf(stderr, "Usage:\n\n\tSerialSend [/quiet] [/noscan] [/baudrate BAUDRATE] ");
-        if (!quiet) fprintf(stderr, "[/devnum DEVICE_NUMBER] [/hex] \"TEXT_TO_SEND\"\n");
+        if (!quiet) fprintf(stderr, "[/dtr DTR] [/devnum DEVICE_NUMBER] [/hex] \"TEXT_TO_SEND\"\n");
         return 1;
     }
     
@@ -220,8 +221,7 @@ int main(int argc, char *argv[])
     
     if (!quiet) fprintf(stderr, "OK\n");
     
-    // Set device parameters (38400 baud, 1 start bit,
-    // 1 stop bit, no parity)
+    // Set device parameters
     dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
     if (GetCommState(hSerial, &dcbSerialParams) == 0)
     {
@@ -229,12 +229,11 @@ int main(int argc, char *argv[])
         CloseHandle(hSerial);
         return 1;
     }
-    //dcbSerialParams.BaudRate = CBR_38400;
     dcbSerialParams.BaudRate = baudrate;
     dcbSerialParams.ByteSize = 8;
     dcbSerialParams.StopBits = ONESTOPBIT;
     dcbSerialParams.Parity = even_parity ? EVENPARITY : odd_parity ? ODDPARITY : NOPARITY;
-	dcbSerialParams.fDtrControl = dtr ? DTR_CONTROL_ENABLE : DTR_CONTROL_DISABLE;
+    dcbSerialParams.fDtrControl = dtr ? DTR_CONTROL_ENABLE : DTR_CONTROL_DISABLE;
     if(SetCommState(hSerial, &dcbSerialParams) == 0)
     {
         if (!quiet) fprintf(stderr, "Error setting device parameters\n");
